@@ -19,8 +19,8 @@ function bionicReading() {
 
   // Check if input starts with "http://" or "https://"
   if (input.startsWith("http://") || input.startsWith("https://")) {
-    // Send a request to the server-side component to fetch the URL content
-    fetch('/fetchUrl.php?url=' + encodeURIComponent(input))
+    // Fetch content from the provided URL
+    fetch(input)
       .then(response => response.text())
       .then(data => processText(data))
       .catch(error => console.log(error));
@@ -41,7 +41,7 @@ function bionicReading() {
           var restOfWord = words[j].substring(1);
           
           // Calculate the number of characters to display in bold
-          var boldChars = Math.ceil(wordLength * 0.44);
+          var boldChars = Math.ceil(wordLength * 0.40);
           var boldSection = restOfWord.substring(0, boldChars);
           var regularSection = restOfWord.substring(boldChars);
           
