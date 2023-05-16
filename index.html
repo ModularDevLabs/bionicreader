@@ -19,8 +19,8 @@ function bionicReading() {
 
   // Check if input starts with "http://" or "https://"
   if (input.startsWith("http://") || input.startsWith("https://")) {
-    // Fetch content from the provided URL
-    fetch(input)
+    // Send a request to the server-side component to fetch the URL content
+    fetch('/fetchUrl.php?url=' + encodeURIComponent(input))
       .then(response => response.text())
       .then(data => processText(data))
       .catch(error => console.log(error));
