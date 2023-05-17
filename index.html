@@ -106,7 +106,8 @@ function getBionicFormat(text) {
       }
     }
     output += "<br>";
-  }
+  }// Set the text input to display by default
+document.getElementById('textInput').style.display = 'block';
 
   return output;
 }
@@ -131,6 +132,8 @@ function displayError(errorMessage) {
   document.getElementById('outputText').appendChild(errorElement);
 }
 
+// Set the text input to display by default
+document.getElementById('textInput').style.display = 'block';
 </script>
 
 </body>
