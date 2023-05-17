@@ -4,60 +4,84 @@
 
 <h2>Bionic Reading</h2>
 
-<textarea id="inputText" rows="10" cols="50">
-Enter your text or URL here...
-</textarea><br>
-
-<button onclick="bionicReading()">Submit</button>
+<input type="file" id="fileInput" accept=".txt" />
+<button onclick="processFile()">Submit</button>
 
 <div id="outputText"></div>
 
 <script>
-function bionicReading() {
-  var input = document.getElementById("inputText").value;
+function processFile() {
+  var fileInput = document.getElementById('fileInput');
+  var file = fileInput.files[0];
+
+  if (file) {
+    var reader = new FileReader();
+
+    reader.onload = function(event) {
+      var text = event.target.result;
+      var formattedText = getBionicFormat(text);
+
+      displayFormattedText(formattedText);
+      createDownloadLink(formattedText);
+    };
+
+    reader.onerror = function(event) {
+      displayError('An error occurred while reading the file.');
+    };
+
+    reader.readAsText(file);
+  }
+}
+
+function getBionicFormat(text) {
   var output = "";
 
-  // Check if input starts with "http://" or "https://"
-  if (input.startsWith("http://") || input.startsWith("https://")) {
-    // Fetch content from the provided URL
-    fetch(input)
-      .then(response => response.text())
-      .then(data => processText(data))
-      .catch(error => console.log(error));
-  } else {
-    // Process the input text directly
-    processText(input);
+  var sentences = text.split("\n");
+  
+  for (var i = 0; i < sentences.length; i++) {
+    var words = sentences[i].split(" ");
+    for (var j = 0; j < words.length; j++) {
+      if (words[j].length > 0) {
+        var wordLength = words[j].length;
+        var firstChar = words[j][0];
+        var restOfWord = words[j].substring(1);
+        
+        // Calculate the number of characters to display in bold
+        var boldChars = Math.ceil(wordLength * 0.44);
+        var boldSection = restOfWord.substring(0, boldChars);
+        var regularSection = restOfWord.substring(boldChars);
+        
+        restOfWord = "<b>" + boldSection + "</b>" + regularSection;
+        
+        output += "<b>" + firstChar + "</b>" + restOfWord + " ";
+      } else {
+        output += " ";
+      }
+    }
+    output += "<br/>";
   }
 
-  function processText(text) {
-    var sentences = text.split("\n");
-  
-    for (var i = 0; i < sentences.length; i++) {
-      var words = sentences[i].split(" ");
-      for (var j = 0; j < words.length; j++) {
-        if (words[j].length > 0) {
-          var wordLength = words[j].length;
-          var firstChar = words[j][0];
-          var restOfWord = words[j].substring(1);
-          
-          // Calculate the number of characters to display in bold
-          var boldChars = Math.ceil(wordLength * 0.40);
-          var boldSection = restOfWord.substring(0, boldChars);
-          var regularSection = restOfWord.substring(boldChars);
-          
-          restOfWord = "<b>" + boldSection + "</b>" + regularSection;
-          
-          output += "<b>" + firstChar + "</b>" + restOfWord + " ";
-        } else {
-          output += " ";
-        }
-      }
-      output += "<br/>";
-    }
-  
-    document.getElementById("outputText").innerHTML = output.trim();
-    document.getElementById("inputText").value = ""; // Clear the input text after processing
-  }
+  return output.trim();
+}
+
+function displayFormattedText(text) {
+  document.getElementById("outputText").innerHTML = text;
+}
+
+function createDownloadLink(text) {
+  var data = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+  var downloadLink = document.createElement('a');
+  downloadLink.href = data;
+  downloadLink.download = 'bionic_formatted.txt';
+  downloadLink.textContent = 'Download Formatted Text';
+  document.getElementById("outputText").appendChild(downloadLink);
+}
+
+function displayError(message) {
+  var errorDiv = document.createElement('div');
+  errorDiv.style.color = 'red';
+  errorDiv.textContent = 'Error: ' + message;
+  document.getElementById('outputText').appendChild(errorDiv);
 }
 </script>
 
