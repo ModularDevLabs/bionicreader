@@ -7,7 +7,7 @@
 <div>
   <label for="inputType">Input Type:</label>
   <select id="inputType" onchange="toggleInput()">
-    <option value="text">Text</option>
+    <option value="text" selected>Text</option>
     <option value="file">File</option>
     <option value="url">URL</option>
   </select>
@@ -119,7 +119,7 @@ function displayFormattedText(formattedText) {
 function createDownloadLink(formattedText) {
   var downloadLink = document.createElement('a');
   downloadLink.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(formattedText);
-  downloadLink.download = 'bionic_reading.html';
+  downloadLink.download = 'bionic_' + originalFilename;
   downloadLink.innerHTML = 'Download Formatted Text';
   document.getElementById('outputText').appendChild(downloadLink);
 }
