@@ -101,7 +101,7 @@ function getBionicFormat(text) {
     for (var j = 0; j < words.length; j++) {
       if (words[j].length > 0) {
         var wordLength = words[j].length;
-        var formattedWord = "<b>" + words[j].substring(0, Math.ceil(wordLength * 0.44)) + "<b>" + words[j].substring(Math.ceil(wordLength * 0.44)) + "</b>";
+        var formattedWord = "<b>" + words[j].substring(0, Math.ceil(wordLength * 0.44)) + "</b>" + words[j].substring(Math.ceil(wordLength * 0.44)) + "</b>";
         output += formattedWord + " ";
       }
     }
