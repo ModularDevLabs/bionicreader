@@ -118,8 +118,8 @@ function displayFormattedText(formattedText) {
 
 function createDownloadLink(formattedText) {
   var downloadLink = document.createElement('a');
-  downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(formattedText);
-  downloadLink.download = 'bionic_reading.txt';
+  downloadLink.href = 'data:text/html;charset=utf-8,' + encodeURIComponent(formattedText);
+  downloadLink.download = 'bionic_reading.html';
   downloadLink.innerHTML = 'Download Formatted Text';
   document.getElementById('outputText').appendChild(downloadLink);
 }
