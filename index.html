@@ -4,32 +4,90 @@
 
 <h2>Bionic Reading</h2>
 
-<input type="file" id="fileInput" accept=".txt" />
-<button onclick="processFile()">Submit</button>
+<div>
+  <label for="inputType">Input Type:</label>
+  <select id="inputType" onchange="toggleInput()">
+    <option value="text">Text</option>
+    <option value="file">File</option>
+    <option value="url">URL</option>
+  </select>
+</div>
+
+<div id="textInput" style="display: none;">
+  <textarea id="inputText" rows="10" cols="50" placeholder="Enter your text here..."></textarea>
+</div>
+
+<div id="fileInput" style="display: none;">
+  <input type="file" id="fileInputField" accept=".txt" />
+</div>
+
+<div id="urlInput" style="display: none;">
+  <input type="text" id="urlInputField" placeholder="Enter the URL here..." />
+</div>
+
+<button onclick="processInput()">Submit</button>
 
 <div id="outputText"></div>
 
 <script>
-function processFile() {
+function toggleInput() {
+  var inputType = document.getElementById('inputType').value;
+
+  var textInput = document.getElementById('textInput');
   var fileInput = document.getElementById('fileInput');
-  var file = fileInput.files[0];
+  var urlInput = document.getElementById('urlInput');
 
-  if (file) {
-    var reader = new FileReader();
+  textInput.style.display = inputType === 'text' ? 'block' : 'none';
+  fileInput.style.display = inputType === 'file' ? 'block' : 'none';
+  urlInput.style.display = inputType === 'url' ? 'block' : 'none';
+}
 
-    reader.onload = function(event) {
-      var text = event.target.result;
-      var formattedText = getBionicFormat(text);
+function processInput() {
+  var inputType = document.getElementById('inputType').value;
 
-      displayFormattedText(formattedText);
-      createDownloadLink(formattedText);
-    };
+  if (inputType === 'text') {
+    var inputText = document.getElementById('inputText').value;
+    var formattedText = getBionicFormat(inputText);
+    displayFormattedText(formattedText);
+    createDownloadLink(formattedText);
+  } else if (inputType === 'file') {
+    var fileInput = document.getElementById('fileInputField');
+    var file = fileInput.files[0];
 
-    reader.onerror = function(event) {
-      displayError('An error occurred while reading the file.');
-    };
+    if (file) {
+      var reader = new FileReader();
 
-    reader.readAsText(file);
+      reader.onload = function(event) {
+        var text = event.target.result;
+        var formattedText = getBionicFormat(text);
+        displayFormattedText(formattedText);
+        createDownloadLink(formattedText);
+      };
+
+      reader.onerror = function(event) {
+        displayError('An error occurred while reading the file.');
+      };
+
+      reader.readAsText(file);
+    }
+  } else if (inputType === 'url') {
+    var urlInput = document.getElementById('urlInputField');
+    var url = urlInput.value.trim();
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      fetch(url)
+        .then(response => response.text())
+        .then(text => {
+          var formattedText = getBionicFormat(text);
+          displayFormattedText(formattedText);
+          createDownloadLink(formattedText);
+        })
+        .catch(error => {
+          displayError('An error occurred while fetching the URL.');
+        });
+    } else {
+      displayError('Invalid URL. Please make sure it starts with "http://" or "https://".');
+    }
   }
 }
 
@@ -37,52 +95,42 @@ function getBionicFormat(text) {
   var output = "";
 
   var sentences = text.split("\n");
-  
+
   for (var i = 0; i < sentences.length; i++) {
     var words = sentences[i].split(" ");
     for (var j = 0; j < words.length; j++) {
       if (words[j].length > 0) {
         var wordLength = words[j].length;
-        var firstChar = words[j][0];
-        var restOfWord = words[j].substring(1);
-        
-        // Calculate the number of characters to display in bold
-        var boldChars = Math.ceil(wordLength * 0.44);
-        var boldSection = restOfWord.substring(0, boldChars);
-        var regularSection = restOfWord.substring(boldChars);
-        
-        restOfWord = "<b>" + boldSection + "</b>" + regularSection;
-        
-        output += "<b>" + firstChar + "</b>" + restOfWord + " ";
-      } else {
-        output += " ";
+        var formattedWord = words[j].substring(0, Math.ceil(wordLength * 0.44)) + "<b>" + words[j].substring(Math.ceil(wordLength * 0.44)) + "</b>";
+        output += formattedWord + " ";
       }
     }
-    output += "<br/>";
+    output += "<br>";
   }
 
-  return output.trim();
+  return output;
 }
 
-function displayFormattedText(text) {
-  document.getElementById("outputText").innerHTML = text;
+function displayFormattedText(formattedText) {
+  var outputElement = document.getElementById('outputText');
+  outputElement.innerHTML = "<pre>" + formattedText + "</pre>";
 }
 
-function createDownloadLink(text) {
-  var data = "data:text/plain;charset=utf-8," + encodeURIComponent(text);
+function createDownloadLink(formattedText) {
   var downloadLink = document.createElement('a');
-  downloadLink.href = data;
-  downloadLink.download = 'bionic_formatted.txt';
-  downloadLink.textContent = 'Download Formatted Text';
-  document.getElementById("outputText").appendChild(downloadLink);
+  downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(formattedText);
+  downloadLink.download = 'bionic_reading.txt';
+  downloadLink.innerHTML = 'Download Formatted Text';
+  document.getElementById('outputText').appendChild(downloadLink);
 }
 
-function displayError(message) {
-  var errorDiv = document.createElement('div');
-  errorDiv.style.color = 'red';
-  errorDiv.textContent = 'Error: ' + message;
-  document.getElementById('outputText').appendChild(errorDiv);
+function displayError(errorMessage) {
+  var errorElement = document.createElement('p');
+  errorElement.innerHTML = errorMessage;
+  errorElement.style.color = 'red';
+  document.getElementById('outputText').appendChild(errorElement);
 }
+
 </script>
 
 </body>
