@@ -4,61 +4,133 @@
 
 <h2>Bionic Reading</h2>
 
-<textarea id="inputText" rows="10" cols="50">
-Enter your text or URL here...
-</textarea><br>
+<div>
+  <label for="inputType">Input Type:</label>
+  <select id="inputType" onchange="toggleInput()">
+    <option value="text">Text</option>
+    <option value="file">File</option>
+    <option value="url">URL</option>
+  </select>
+</div>
 
-<button onclick="bionicReading()">Submit</button>
+<div id="textInput" style="display: none;">
+  <textarea id="inputText" rows="10" cols="50" placeholder="Enter your text here..."></textarea>
+</div>
+
+<div id="fileInput" style="display: none;">
+  <input type="file" id="fileInputField" accept=".txt" />
+</div>
+
+<div id="urlInput" style="display: none;">
+  <input type="text" id="urlInputField" placeholder="Enter the URL here..." />
+</div>
+
+<button onclick="processInput()">Submit</button>
 
 <div id="outputText"></div>
 
 <script>
-function bionicReading() {
-  var input = document.getElementById("inputText").value;
-  var output = "";
+function toggleInput() {
+  var inputType = document.getElementById('inputType').value;
 
-  // Check if input starts with "http://" or "https://"
-  if (input.startsWith("http://") || input.startsWith("https://")) {
-    // Fetch content from the provided URL
-    fetch(input)
-      .then(response => response.text())
-      .then(data => processText(data))
-      .catch(error => console.log(error));
-  } else {
-    // Process the input text directly
-    processText(input);
-  }
+  var textInput = document.getElementById('textInput');
+  var fileInput = document.getElementById('fileInput');
+  var urlInput = document.getElementById('urlInput');
 
-  function processText(text) {
-    var sentences = text.split("\n");
-  
-    for (var i = 0; i < sentences.length; i++) {
-      var words = sentences[i].split(" ");
-      for (var j = 0; j < words.length; j++) {
-        if (words[j].length > 0) {
-          var wordLength = words[j].length;
-          var firstChar = words[j][0];
-          var restOfWord = words[j].substring(1);
-          
-          // Calculate the number of characters to display in bold
-          var boldChars = Math.ceil(wordLength * 0.40);
-          var boldSection = restOfWord.substring(0, boldChars);
-          var regularSection = restOfWord.substring(boldChars);
-          
-          restOfWord = "<b>" + boldSection + "</b>" + regularSection;
-          
-          output += "<b>" + firstChar + "</b>" + restOfWord + " ";
-        } else {
-          output += " ";
-        }
-      }
-      output += "<br/>";
+  textInput.style.display = inputType === 'text' ? 'block' : 'none';
+  fileInput.style.display = inputType === 'file' ? 'block' : 'none';
+  urlInput.style.display = inputType === 'url' ? 'block' : 'none';
+}
+
+function processInput() {
+  var inputType = document.getElementById('inputType').value;
+
+  if (inputType === 'text') {
+    var inputText = document.getElementById('inputText').value;
+    var formattedText = getBionicFormat(inputText);
+    displayFormattedText(formattedText);
+    createDownloadLink(formattedText);
+  } else if (inputType === 'file') {
+    var fileInput = document.getElementById('fileInputField');
+    var file = fileInput.files[0];
+
+    if (file) {
+      var reader = new FileReader();
+
+      reader.onload = function(event) {
+        var text = event.target.result;
+        var formattedText = getBionicFormat(text);
+        displayFormattedText(formattedText);
+        createDownloadLink(formattedText);
+      };
+
+      reader.onerror = function(event) {
+        displayError('An error occurred while reading the file.');
+      };
+
+      reader.readAsText(file);
     }
-  
-    document.getElementById("outputText").innerHTML = output.trim();
-    document.getElementById("inputText").value = ""; // Clear the input text after processing
+  } else if (inputType === 'url') {
+    var urlInput = document.getElementById('urlInputField');
+    var url = urlInput.value.trim();
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      fetch(url)
+        .then(response => response.text())
+        .then(text => {
+          var formattedText = getBionicFormat(text);
+          displayFormattedText(formattedText);
+          createDownloadLink(formattedText);
+        })
+        .catch(error => {
+          displayError('An error occurred while fetching the URL.');
+        });
+    } else {
+      displayError('Invalid URL. Please make sure it starts with "http://" or "https://".');
+    }
   }
 }
+
+function getBionicFormat(text) {
+  var output = "";
+
+  var sentences = text.split("\n");
+
+  for (var i = 0; i < sentences.length; i++) {
+    var words = sentences[i].split(" ");
+    for (var j = 0; j < words.length; j++) {
+      if (words[j].length > 0) {
+        var wordLength = words[j].length;
+        var formattedWord = words[j].substring(0, Math.ceil(wordLength * 0.44)) + "<b>" + words[j].substring(Math.ceil(wordLength * 0.44)) + "</b>";
+        output += formattedWord + " ";
+      }
+    }
+    output += "<br>";
+  }
+
+  return output;
+}
+
+function displayFormattedText(formattedText) {
+  var outputElement = document.getElementById('outputText');
+  outputElement.innerHTML = "<pre>" + formattedText + "</pre>";
+}
+
+function createDownloadLink(formattedText) {
+  var downloadLink = document.createElement('a');
+  downloadLink.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(formattedText);
+  downloadLink.download = 'bionic_reading.txt';
+  downloadLink.innerHTML = 'Download Formatted Text';
+  document.getElementById('outputText').appendChild(downloadLink);
+}
+
+function displayError(errorMessage) {
+  var errorElement = document.createElement('p');
+  errorElement.innerHTML = errorMessage;
+  errorElement.style.color = 'red';
+  document.getElementById('outputText').appendChild(errorElement);
+}
+
 </script>
 
 </body>
